@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircle, Bug, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BugForm } from "@/components/BugForm";
 import { ImageUploader } from "@/components/ImageUploader";
@@ -295,7 +296,7 @@ export default function Page() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-              <Bug className="h-4 w-4" />
+              <Image src="/BugSnap/logo.png" alt="" width={20} height={20} className="object-contain" priority unoptimized />
               BugSnap
             </div>
             <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
