@@ -1,0 +1,62 @@
+name: Deploy BugSnap
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: bugsnap-production
+  cancel-in-progress: true
+
+jobs:
+  test-build-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify local app
+        run: |
+          npm ci
+          npm test
+          npm run lint
+          npm audit --omit=dev
+          npm run build
+          test -f out/index.html
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s' "$DEPLOY_SSH_KEY_B64" | base64 -d > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
+          ssh-keyscan -p "$DEPLOY_PORT" "$DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy static export
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$DEPLOY_PORT" "$DEPLOY_USER@$DEPLOY_HOST" \
+            "mkdir -p /var/www/coms/BugSnap"
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $DEPLOY_PORT" \
+            out/ "$DEPLOY_USER@$DEPLOY_HOST:/var/www/coms/BugSnap/"
+
+      - name: Verify public route
+        run: |
+          curl --fail --retry 5 --retry-delay 3 "https://coms.kw.ac.kr/BugSnap/"
+          curl --fail --retry 5 --retry-delay 3 "https://coms.kw.ac.kr/BugSnap/index.html"

@@ -18,6 +18,7 @@ import {
   generateMarkdownReport,
   inferBugDraft
 } from "@/lib/reportGenerator";
+import { evaluateReportReadiness } from "@/lib/reportQuality";
 import {
   deleteStoredReport,
   getStoredReports,
@@ -69,6 +70,10 @@ export default function Page() {
         id: "preview",
         createdAt: new Date(0).toISOString()
       }),
+    [draft]
+  );
+  const reportReadiness = useMemo(
+    () => evaluateReportReadiness(draft),
     [draft]
   );
 
@@ -338,6 +343,7 @@ export default function Page() {
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.9fr]">
         <MarkdownPreview
           markdown={markdownReport}
+          readiness={reportReadiness}
           copied={copied}
           onCopy={() => void copyMarkdown()}
           onDownload={downloadMarkdown}

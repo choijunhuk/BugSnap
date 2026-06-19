@@ -27,5 +27,8 @@ pnpm-debug.log*
 # vercel
 .vercel
 
+# local orchestration state
+.omx/
+
 # typescript
 *.tsbuildinfo

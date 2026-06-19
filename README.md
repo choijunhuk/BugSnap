@@ -17,6 +17,7 @@ BugSnap은 오류 화면 스크린샷을 업로드하면 OCR로 화면 텍스트
 - GitHub Issue용 Markdown 자동 생성
 - Markdown 한 번에 복사
 - Markdown `.md` 파일 다운로드
+- 리포트 완성도 점수와 부족한 항목 안내
 - 최근 리포트 localStorage 저장, 불러오기, 삭제
 - 데스크톱 2단 레이아웃 및 모바일 세로 배치
 
@@ -29,11 +30,15 @@ npm run dev
 
 브라우저에서 `http://localhost:3000`을 엽니다.
 
+COMS 배포 경로 기준으로 확인하려면 `http://localhost:3000/BugSnap`을 엽니다.
+
 프로덕션 빌드 확인:
 
 ```bash
 npm run build
 ```
+
+`npm run build`는 정적 export를 생성하며 결과물은 `out/`에 저장됩니다.
 
 테스트와 린트:
 
@@ -53,6 +58,23 @@ npm run lint
 - Vitest
 - localStorage
 
+## 배포
+
+GitHub Actions는 `main` 브랜치 push 시 테스트, 린트, audit, 정적 빌드를 실행한 뒤 `out/`을 COMS 서버의 `/var/www/coms/BugSnap`으로 동기화합니다.
+
+필요한 GitHub Secrets:
+
+- `DEPLOY_HOST`
+- `DEPLOY_PORT`
+- `DEPLOY_USER`
+- `DEPLOY_SSH_KEY_B64`
+
+서버에서 직접 배포해야 할 때는 저장소 체크아웃 위치에서 다음 스크립트를 사용할 수 있습니다.
+
+```bash
+bash scripts/deploy-coms.sh
+```
+
 ## 폴더 구조
 
 ```text
@@ -70,14 +92,19 @@ BugSnap/
 ├── lib/
 │   ├── environment.ts
 │   ├── download.ts
+│   ├── reportQuality.ts
 │   ├── reportGenerator.ts
 │   └── storage.ts
 ├── tests/
+│   ├── download.test.ts
 │   ├── environment.test.ts
+│   ├── reportQuality.test.ts
 │   ├── reportGenerator.test.ts
 │   └── storage.test.ts
 ├── types/
 │   └── report.ts
+├── scripts/
+│   └── deploy-coms.sh
 ├── next.config.ts
 ├── package.json
 └── README.md
